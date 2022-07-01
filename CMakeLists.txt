@@ -129,7 +129,7 @@ if (Hydrogen_ENABLE_CUDA OR Hydrogen_ENABLE_ROCM)
 
   option(Hydrogen_ENABLE_GPU_TENSOR_MATH
     "Use the GPU tensor operations when available."
-    OFF)
+    ON)
 
   option(Hydrogen_ENABLE_GPU_FP16
     "Enable FP16 arithmetic in GPU code."
