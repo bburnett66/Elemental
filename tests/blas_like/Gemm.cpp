@@ -256,6 +256,9 @@ main(int argc, char* argv[])
         const Int rowAlignC = Input("--rowAlignC","row align of C",0);
         const bool testCPU = El::Input("--testCPU", "test CPU gemm?", true);
         const bool testGPU = El::Input("--testGPU", "test GPU gemm?", false);
+        const bool testHalf = EL::Input("--testHalf", "test GPU half?", false);
+        const bool testSingle = EL::Input("--testSingle", "test GPU float?", false);
+        const bool testDouble = EL::Input("--testDouble", "test GPU double?", false);
 
         ProcessInput();
         PrintInputReport();
@@ -275,34 +278,43 @@ main(int argc, char* argv[])
         if (testGPU)
         {
 #if defined HYDROGEN_HAVE_HALF && defined HYDROGEN_GPU_USE_FP16
-            TestGemm<gpu_half_type,Device::GPU>
-                (orientA, orientB,
-                 m, n, k,
-                 gpu_half_type(3.f), gpu_half_type(4.f),
-                 g,
-                 print, correctness,
-                 colAlignA, rowAlignA,
-                 colAlignB, rowAlignB,
-                 colAlignC, rowAlignC);
+            if (testHalf)
+            {
+                TestGemm<gpu_half_type,Device::GPU>
+                    (orientA, orientB,
+                     m, n, k,
+                     gpu_half_type(3.f), gpu_half_type(4.f),
+                     g,
+                     print, correctness,
+                     colAlignA, rowAlignA,
+                     colAlignB, rowAlignB,
+                     colAlignC, rowAlignC);
+            }
 #endif // defined HYDROGEN_HAVE_HALF && defined HYDROGEN_GPU_USE_FP16
-            TestGemm<float,Device::GPU>
-                (orientA, orientB,
-                 m, n, k,
-                 float(3), float(4),
-                 g,
-                 print, correctness,
-                 colAlignA, rowAlignA,
-                 colAlignB, rowAlignB,
-                 colAlignC, rowAlignC);
-            TestGemm<double,Device::GPU>
-                (orientA, orientB,
-                 m, n, k,
-                 double(3), double(4),
-                 g,
-                 print, correctness,
-                 colAlignA, rowAlignA,
-                 colAlignB, rowAlignB,
-                 colAlignC, rowAlignC);
+            if (testSingle)
+            {
+                TestGemm<float,Device::GPU>
+                    (orientA, orientB,
+                     m, n, k,
+                     float(3), float(4),
+                     g,
+                     print, correctness,
+                     colAlignA, rowAlignA,
+                     colAlignB, rowAlignB,
+                     colAlignC, rowAlignC);
+            }
+            if (testDouble)
+            {
+                TestGemm<double,Device::GPU>
+                    (orientA, orientB,
+                     m, n, k,
+                     double(3), double(4),
+                     g,
+                     print, correctness,
+                     colAlignA, rowAlignA,
+                     colAlignB, rowAlignB,
+                     colAlignC, rowAlignC);
+            }
         }
 #else
         (void)testGPU;
