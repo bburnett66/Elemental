@@ -256,9 +256,9 @@ main(int argc, char* argv[])
         const Int rowAlignC = Input("--rowAlignC","row align of C",0);
         const bool testCPU = El::Input("--testCPU", "test CPU gemm?", true);
         const bool testGPU = El::Input("--testGPU", "test GPU gemm?", false);
-        const bool testHalf = EL::Input("--testHalf", "test GPU half?", false);
-        const bool testSingle = EL::Input("--testSingle", "test GPU float?", false);
-        const bool testDouble = EL::Input("--testDouble", "test GPU double?", false);
+        const bool testHalf = El::Input("--testHalf", "test GPU half?", false);
+        const bool testSingle = El::Input("--testSingle", "test GPU float?", false);
+        const bool testDouble = El::Input("--testDouble", "test GPU double?", false);
 
         ProcessInput();
         PrintInputReport();
