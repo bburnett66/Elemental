@@ -542,18 +542,18 @@ ASSERT_NO_SUPPORT(__half, BLAS_Op::GEAM);
 ASSERT_NO_SUPPORT(__half, BLAS_Op::GEMV);
 
 //Assert support for gemmEx @bburnett
-#define ASSERT_SUPPORT(type1, type2, type3, op)                        \
-    static_assert(IsSupportedType<type1, type2, type3, op>::value, "")
+#define ASSERT_SUPPORT_EX(type1, type2, type3, op)                        \
+    static_assert(IsSupportedTypeEX<type1, type2, type3, op>::value, "")
 
-#define ASSERT_NO_SUPPORT(type1, type2, type3, op)                        \
-    static_assert(!IsSupportedType<type1, type2, type3, op>::value, "")
+#define ASSERT_NO_SUPPORT_EX(type1, type2, type3, op)                        \
+    static_assert(!IsSupportedTypeEX<type1, type2, type3, op>::value, "")
 
-ASSERT_SUPPORT(__half, __half, float, BLAS_Op::GEMM);
-ASSERT_SUPPORT(__half, float, float, BLAS_Op::GEMM);
-ASSERT_SUPPORT(float, __half, float, BLAS_Op::GEMM);
-ASSERT_SUPPORT(float, float, __half, BLAS_Op::GEMM);
-ASSERT_SUPPORT(float, __half, __half, BLAS_Op::GEMM);
-ASSERT_SUPPORT(__half, float, __half, BLAS_Op::GEMM);
+ASSERT_SUPPORT_EX(__half, __half, float, BLAS_Op::GEMM);
+ASSERT_SUPPORT_EX(__half, float, float, BLAS_Op::GEMM);
+ASSERT_SUPPORT_EX(float, __half, float, BLAS_Op::GEMM);
+ASSERT_SUPPORT_EX(float, float, __half, BLAS_Op::GEMM);
+ASSERT_SUPPORT_EX(float, __half, __half, BLAS_Op::GEMM);
+ASSERT_SUPPORT_EX(__half, float, __half, BLAS_Op::GEMM);
 //TODO gemmEx only works on mixed single/half gemm operations for now
 //assert mixed double/half, double/single, etc are not supported
 //ASSERT_NO_SUPPORT()
