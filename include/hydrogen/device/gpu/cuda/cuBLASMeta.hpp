@@ -110,6 +110,37 @@ template <>
 struct IsSupportedType_Base<__half, BLAS_Op::NRM2> : std::true_type {};
 template <>
 struct IsSupportedType_Base<__half, BLAS_Op::SCAL> : std::true_type {};
+
+//for gemmEx functions @bburnett
+//gemmEx uses same user API endpoint GEMM, but allows for mixed input/output
+//matrices for single/half. 
+template <typename T1, typename T2, typename T3, BLAS_Op op>
+struct IsSupportedType_Base : std::false_type {};
+
+template <>
+struct IsSupportedType_Base<__half, __half, float, BLAS_Op::GEMM> 
+    : std::true_type 
+{};
+template <>
+struct IsSupportedType_Base<__half, float, float, BLAS_Op::GEMM> 
+    : std::true_type 
+{};
+template <>
+struct IsSupportedType_Base<float, __half, float, BLAS_Op::GEMM> 
+    : std::true_type 
+{};
+template <>
+struct IsSupportedType_Base<float, float, __half, BLAS_Op::GEMM> 
+    : std::true_type 
+{};
+template <>
+struct IsSupportedType_Base<float, __half, __half, BLAS_Op::GEMM> 
+    : std::true_type 
+{};
+template <>
+struct IsSupportedType_Base<__half, float, __half, BLAS_Op::GEMM> 
+    : std::true_type 
+{};
 #endif // HYDROGEN_GPU_USE_FP16
 
 /** @class IsSupportedType
@@ -127,6 +158,21 @@ struct IsSupportedType
 
 template <typename T, BLAS_Op op>
 struct IsSupportedType<T,op,false> : std::false_type {};
+
+//For gemmEx support @bburnett
+template <
+    typename T1, typename T2, typename T3, 
+    BLAS_Op op, 
+    bool=HasNativeType<T1>::value, 
+    bool=HasNativeType<T2>::value, 
+    bool=HasNativeType<T3>::value
+    >
+struct IsSupportedType 
+    : IsSupportedType_Base<NativeType<T1>, NativeType<T2>, NativeType<T3>, op>
+{};
+
+template <typename T1, typename T2, typename T3, BLAS_Op op>
+struct IsSupportedType<T1, T2, T3, op, false, false, false> : std::false_type {};
 
 }// namespace cublas
 }// namespace hydrogen

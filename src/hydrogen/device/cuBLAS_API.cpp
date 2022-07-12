@@ -9,6 +9,7 @@
 #endif // HYDROGEN_GPU_USE_FP16
 
 #include <cublas_v2.h>
+#include <library_types.h>
 
 namespace hydrogen
 {
@@ -367,6 +368,33 @@ using RealType = typename RealTypeT<T>::type;
                 side, m, n, A, lda, X, incx, C, ldc));  \
     }
 
+#ifdef HYDROGEN_GPU_USE_FP16
+#define ADD_GEMMEX_IMPL(AType, ACuType, BType, BCuType, CType, CCuType) \
+    void Gemm(                                                          \
+        cublasHandle_t handle,                                          \
+        cublasOperation_t transpA,                                      \
+        cublasOperation_t transpB,                                      \
+        int m, int n, int k,                                            \
+        float const& alpha,                                             \
+        AType const* A, int lda,                                        \
+        BType const* B, int ldb,                                        \
+        float const& beta,                                              \
+        CType* C, int ldc)                                              \
+    {                                                                   \
+        H_CHECK_CUBLAS(                                                 \
+            cublasGemmEx(                                               \
+                handle,                                                 \
+                transpA, transpB,                                       \
+                m, n, k,                                                \
+                &alpha,                                                 \
+                A, ACuType, lda,                                        \
+                B, BCuType, ldb,                                        \
+                &beta,                                                  \
+                C, CCuType, ldc,                                        \
+                CUBLAS_COMPUTE_32F, CUBLAS_GEMM_DEFAULT));              \
+    }                                                                   \
+#endif //HYDROGEN_GPU_USE_FP16
+
 // BLAS 1
 ADD_AXPY_IMPL(float, S)
 ADD_AXPY_IMPL(double, D)
@@ -438,6 +466,15 @@ ADD_DGMM_IMPL(double, D)
 ADD_DGMM_IMPL(cuComplex, C)
 ADD_DGMM_IMPL(cuDoubleComplex, Z)
 
+#ifdef HYDROGEN_GPU_USE_FP16
+ADD_GEMMEX_IMPL(__half, CUDA_R_16F, __half, CUDA_R_16F, float, CUDA_R_32F)
+ADD_GEMMEX_IMPL(float, CUDA_R_32F, __half, CUDA_R_16F, float, CUDA_R_32F)
+ADD_GEMMEX_IMPL(__half, CUDA_R_16F, float, CUDA_R_32F, float, CUDA_R_32F)
+ADD_GEMMEX_IMPL(float, CUDA_R_32F, __half, CUDA_R_16F, __half, CUDA_R_16F)
+ADD_GEMMEX_IMPL(__half, CUDA_R_16F, float, CUDA_R_32F, __half, CUDA_R_16F)
+ADD_GEMMEX_IMPL(float, CUDA_R_32F, float, CUDA_R_32F, __half, CUDA_R_16F)
+#endif //HYDROGEN_GPU_USE_FP16
+
 //
 // "STATIC" UNIT TEST
 //
@@ -503,6 +540,23 @@ ASSERT_NO_SUPPORT(__half, BLAS_Op::COPY);
 ASSERT_NO_SUPPORT(__half, BLAS_Op::DGMM);
 ASSERT_NO_SUPPORT(__half, BLAS_Op::GEAM);
 ASSERT_NO_SUPPORT(__half, BLAS_Op::GEMV);
+
+//Assert support for gemmEx @bburnett
+#define ASSERT_SUPPORT(type1, type2, type3, op)                        \
+    static_assert(IsSupportedType<type1, type2, type3, op>::value, "")
+
+#define ASSERT_NO_SUPPORT(type1, type2, type3, op)                        \
+    static_assert(!IsSupportedType<type1, type2, type3, op>::value, "")
+
+ASSERT_SUPPORT(__half, __half, float, BLAS_Op::GEMM);
+ASSERT_SUPPORT(__half, float, float, BLAS_Op::GEMM);
+ASSERT_SUPPORT(float, __half, float, BLAS_Op::GEMM);
+ASSERT_SUPPORT(float, float, __half, BLAS_Op::GEMM);
+ASSERT_SUPPORT(float, __half, __half, BLAS_Op::GEMM);
+ASSERT_SUPPORT(__half, float, __half, BLAS_Op::GEMM);
+//TODO gemmEx only works on mixed single/half gemm operations for now
+//assert mixed double/half, double/single, etc are not supported
+//ASSERT_NO_SUPPORT()
 
 #ifdef HYDROGEN_HAVE_HALF
 ASSERT_SUPPORT(cpu_half_type, BLAS_Op::AXPY);
