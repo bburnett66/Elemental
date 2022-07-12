@@ -69,7 +69,7 @@ void TestGemmEX
  Int colAlignB=0, Int rowAlignB=0,
  Int colAlignC=0, Int rowAlignC=0)
 {
-  OutputFromRoot(g.Comm(),"Testing with ",TypeName<T>());
+  OutputFromRoot(g.Comm(),"Testing with ",TypeName<T1>(),TypeName<T2>(),TypeName<T3>());
     PushIndent();
 
     double runTime, realGFlops, gFlops;
@@ -129,7 +129,7 @@ void TestGemmEX
         timer.Stop();
         runTime = timer.GetTime();
         realGFlops = 2.*double(m)*double(n)*double(k)/(1.e9*runTime);
-        gFlops = (IsComplex<T>::value ? 4*realGFlops : realGFlops);
+        gFlops = realGFlops;
         OutputFromRoot(
             g.Comm(),"Finished in ",runTime," seconds (",gFlops," GFlop/s)");
 
@@ -162,7 +162,7 @@ void TestGemmEX
         timer.Stop();
         runTime = timer.GetTime();
         realGFlops = 2.*double(m)*double(n)*double(k)/(1.e9*runTime);
-        gFlops = (IsComplex<T>::value ? 4*realGFlops : realGFlops);
+        gFlops = realGFlops;
 
         OutputFromRoot(
             g.Comm(),"Finished in ",runTime, " seconds (",gFlops," GFlop/s)");
@@ -194,7 +194,7 @@ void TestGemmEX
         timer.Stop();
         runTime = timer.GetTime();
         realGFlops = 2.*double(m)*double(n)*double(k)/(1.e9*runTime);
-        gFlops = (IsComplex<T>::value ? 4*realGFlops : realGFlops);
+        gFlops = realGFlops;
 
         OutputFromRoot(
             g.Comm(),"Finished in ",runTime," seconds (",gFlops," GFlop/s)");
@@ -227,7 +227,7 @@ void TestGemmEX
             timer.Stop();
             runTime = timer.GetTime();
             realGFlops = 2.*double(m)*double(n)*double(k)/(1.e9*runTime);
-            gFlops = (IsComplex<T>::value ? 4*realGFlops : realGFlops);
+            gFlops = realGFlops;
             OutputFromRoot(
                 g.Comm(),"Finished in ",runTime," seconds (",gFlops,
                 " GFlop/s)");
