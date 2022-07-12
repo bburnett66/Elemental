@@ -288,7 +288,7 @@ main(int argc, char* argv[])
 
     OutputFromRoot(g.Comm(),"Will test Gemm",transA,transB);
 
-    TestGemm<gpu_half_type, gpu_half_type, float, Device::GPU>
+    TestGemmEX<gpu_half_type, gpu_half_type, float, Device::GPU>
         (orientA, orientB,
          m, n, k,
          float(3), float(4),
@@ -298,7 +298,7 @@ main(int argc, char* argv[])
          colAlignB, rowAlignB,
          colAlignC, rowAlignC);
 
-    TestGemm<float, gpu_half_type, float, Device::GPU>
+    TestGemmEX<float, gpu_half_type, float, Device::GPU>
         (orientA, orientB,
          m, n, k,
          float(3), float(4),
@@ -308,7 +308,7 @@ main(int argc, char* argv[])
          colAlignB, rowAlignB,
          colAlignC, rowAlignC);
 
-    TestGemm<gpu_half_type, float, float, Device::GPU>
+    TestGemmEX<gpu_half_type, float, float, Device::GPU>
         (orientA, orientB,
          m, n, k,
          float(3), float(4),
@@ -318,7 +318,7 @@ main(int argc, char* argv[])
          colAlignB, rowAlignB,
          colAlignC, rowAlignC);
 
-    TestGemm<float, float, gpu_half_type, Device::GPU>
+    TestGemmEX<float, float, gpu_half_type, Device::GPU>
         (orientA, orientB,
          m, n, k,
          float(3), float(4),
@@ -328,7 +328,7 @@ main(int argc, char* argv[])
          colAlignB, rowAlignB,
          colAlignC, rowAlignC);
 
-    TestGemm<gpu_half_type, float, gpu_half_type, Device::GPU>
+    TestGemmEX<gpu_half_type, float, gpu_half_type, Device::GPU>
         (orientA, orientB,
          m, n, k,
          float(3), float(4),
@@ -338,7 +338,7 @@ main(int argc, char* argv[])
          colAlignB, rowAlignB,
          colAlignC, rowAlignC);
 
-    TestGemm<float, gpu_half_type, gpu_half_type, Device::GPU>
+    TestGemmEX<float, gpu_half_type, gpu_half_type, Device::GPU>
         (orientA, orientB,
          m, n, k,
          float(3), float(4),
