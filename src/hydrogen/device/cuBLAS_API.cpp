@@ -368,7 +368,6 @@ using RealType = typename RealTypeT<T>::type;
                 side, m, n, A, lda, X, incx, C, ldc));  \
     }
 
-#ifdef HYDROGEN_GPU_USE_FP16
 #define ADD_GEMMEX_IMPL(AType, ACuType, BType, BCuType, CType, CCuType) \
     void Gemm(                                                          \
         cublasHandle_t handle,                                          \
@@ -393,7 +392,6 @@ using RealType = typename RealTypeT<T>::type;
                 C, CCuType, ldc,                                        \
                 CUBLAS_COMPUTE_32F, CUBLAS_GEMM_DEFAULT));              \
     }                                                                   \
-#endif //HYDROGEN_GPU_USE_FP16
 
 // BLAS 1
 ADD_AXPY_IMPL(float, S)
@@ -466,14 +464,12 @@ ADD_DGMM_IMPL(double, D)
 ADD_DGMM_IMPL(cuComplex, C)
 ADD_DGMM_IMPL(cuDoubleComplex, Z)
 
-#ifdef HYDROGEN_GPU_USE_FP16
 ADD_GEMMEX_IMPL(__half, CUDA_R_16F, __half, CUDA_R_16F, float, CUDA_R_32F)
 ADD_GEMMEX_IMPL(float, CUDA_R_32F, __half, CUDA_R_16F, float, CUDA_R_32F)
 ADD_GEMMEX_IMPL(__half, CUDA_R_16F, float, CUDA_R_32F, float, CUDA_R_32F)
 ADD_GEMMEX_IMPL(float, CUDA_R_32F, __half, CUDA_R_16F, __half, CUDA_R_16F)
 ADD_GEMMEX_IMPL(__half, CUDA_R_16F, float, CUDA_R_32F, __half, CUDA_R_16F)
 ADD_GEMMEX_IMPL(float, CUDA_R_32F, float, CUDA_R_32F, __half, CUDA_R_16F)
-#endif //HYDROGEN_GPU_USE_FP16
 
 //
 // "STATIC" UNIT TEST
