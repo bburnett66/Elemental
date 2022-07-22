@@ -368,9 +368,9 @@ using RealType = typename RealTypeT<T>::type;
     }
 
 //NOTE: Scalar type is inferred from the compute type
-#define ADD_GEMMEX_IMPL(ABType, ABCuType, CType, CCUType, ScalarType, ComputeType, AlgoType)   \
+#define ADD_GEMMEX_IMPL(ABType, ABCuType, CType, CCuType, ScalarType, ComputeType, AlgoType)   \
     void GemmEx(                                                \
-        cublasHandle_t,                                         \
+        cublasHandle_t handle,                                  \
         cublasOperation_t transpA,                              \
         cublasOperation_t transpB,                              \
         int m, int n, int k,                                    \
@@ -386,10 +386,10 @@ using RealType = typename RealTypeT<T>::type;
                     transpA, transpB,                           \
                     m, n, k,                                    \
                     &alpha,                                     \
-                    A, ABCUType, lda,                           \
-                    B, ABCUType, ldb,                           \
+                    A, ABCuType, lda,                           \
+                    B, ABCuType, ldb,                           \
                     &beta,                                      \
-                    C, CCUType, ldc,                            \
+                    C, CCuType, ldc,                            \
                     ComputeType, AlgoType                       \
                 ));                                             \
     }                                                           \
@@ -466,11 +466,11 @@ ADD_DGMM_IMPL(cuComplex, C)
 ADD_DGMM_IMPL(cuDoubleComplex, Z)
 
 //ADD_GEMMEX_IMPL(ABType, ABCuType, CType, CCUType, ScalarType, ComputeType, AlgoType)
-ADD_GEMMEX_IMPL(__half, CUBLAS_R_16F, __half, CUBLAS_R_16F, __half, CUBLAS_COMPUTE_16F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
-ADD_GEMMEX_IMPL(__half, CUBLAS_R_16F, __half, CUBLAS_R_16F, float, CUBLAS_COMPUTE_32F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
-ADD_GEMMEX_IMPL(__half, CUBLAS_R_16F, float, CUBLAS_R_32F, float, CUBLAS_COMPUTE_32F, CUBLAS_GEMM_DEFUALT_TENSOR_OP);
-ADD_GEMMEX_IMPL(float, CUBLAS_R_32F, float, CUBLAS_R_32F, float, CUBLAS_COMPUTE_32F_FAST_16F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
-ADD_GEMMEX_IMPL(double, CUBLAS_R_64F, double, CUBLAS_R_64F, double, CUBLAS_COMPUTE_64F, CUBLAS_GEMM_DEFAULT);
+ADD_GEMMEX_IMPL(__half, CUDA_R_16F, __half, CUDA_R_16F, __half, CUBLAS_COMPUTE_16F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
+ADD_GEMMEX_IMPL(__half, CUDA_R_16F, __half, CUDA_R_16F, float, CUBLAS_COMPUTE_32F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
+ADD_GEMMEX_IMPL(__half, CUDA_R_16F, float, CUDA_R_32F, float, CUBLAS_COMPUTE_32F, CUBLAS_GEMM_DEFUALT_TENSOR_OP);
+ADD_GEMMEX_IMPL(float, CUDA_R_32F, float, CUDA_R_32F, float, CUBLAS_COMPUTE_32F_FAST_16F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
+ADD_GEMMEX_IMPL(double, CUDA_R_64F, double, CUDA_R_64F, double, CUBLAS_COMPUTE_64F, CUBLAS_GEMM_DEFAULT);
 
 //
 // "STATIC" UNIT TEST
@@ -557,7 +557,7 @@ ASSERT_NO_SUPPORT_GEMMEX(__half, double, double);
 ASSERT_NO_SUPPORT_GEMMEX(float, double, double);
 ASSERT_NO_SUPPORT_GEMMEX(float, float, double);
 ASSERT_NO_SUPPORT_GEMMEX(float, double, float);
-ASSERT_NO_SUPPORT_GEMMEX(double, double __half);
+ASSERT_NO_SUPPORT_GEMMEX(double, double, __half);
 ASSERT_NO_SUPPORT_GEMMEX(double, __half, __half);
 ASSERT_NO_SUPPORT_GEMMEX(double, __half, double);
 ASSERT_NO_SUPPORT_GEMMEX(double, double, float);
@@ -567,7 +567,7 @@ ASSERT_NO_SUPPORT_GEMMEX(__half, float, double);
 ASSERT_NO_SUPPORT_GEMMEX(__half, double, float);
 ASSERT_NO_SUPPORT_GEMMEX(float, __half, double);
 ASSERT_NO_SUPPORT_GEMMEX(float, double, half);
-ASSERT_NO_SUPPORT_GEMMEX(double __half, float);
+ASSERT_NO_SUPPORT_GEMMEX(double, __half, float);
 ASSERT_NO_SUPPORT_GEMMEX(double, float, __half);
 
 #ifdef HYDROGEN_HAVE_HALF
