@@ -225,6 +225,26 @@ ADD_DGMM_DECL(double);
 ADD_DGMM_DECL(cuComplex);
 ADD_DGMM_DECL(cuDoubleComplex);
 
+#define ADD_GEMMEX_DECL(ABType, CType, ScalarType,)     \
+    void GemmEx(                                        \
+        cublasHandle_t,                                 \
+        cublasOperation_t transpA,                      \
+        cublasOperation_t transpB,                      \
+        int m, int n, int k,                            \
+        ScalarType const& alpha,                        \
+        ABType const* A, int lda,                       \
+        ABType const* B, int ldb,                       \
+        ScalarType const& beta,                         \
+        CType* C, int ldc)
+
+#ifdef HYDROGEN_GPU_USE_FP16
+ADD_GEMMEX_DECL(__half, __half, __half);
+ADD_GEMMEX_DECL(__half, __half, float);
+ADD_GEMMEX_DECL(__half, float, float);
+ADD_GEMMEX_DECL(float, float, float);
+ADD_GEMMEX_DECL(double, double, double);
+#endif // HYDROGEN_GPU_USE_FP16
+
 ///@}
 }// namespace cublas
 }// namespace hydrogen

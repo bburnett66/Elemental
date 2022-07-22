@@ -478,6 +478,7 @@ void DgmmImpl(SideMode side,
 template <typename ScalarType, 
             typename ABType, 
             typename CType,
+            typename SizeT,
             EnableWhen<IsSupportedGemmExCombo<ScalarType, ABType, CType>, int> = 0>
 void GemmExImpl(
     TransposeMode transA, TransposeMode transB,
@@ -494,6 +495,9 @@ void GemmExImpl(
     auto constexpr scalar_type = IsSupportedGemmExCombo<ScalarType, ABType, CType>::scalar_type;
     auto constexpr compute_type = IsSupportedGemmExCombo<ScalarType, ABType, CType>::compute_type;
 
+    using NTP = MakePointer<NativeType<ABType>>;
+    using CNTP = MakePointerToConst<NativeType<CType>>;
+
     SyncManager mgr(GetLibraryHandle(), si);
     gpu_blas_impl::GemmEx(
         GetLibraryHandle(),
@@ -501,10 +505,10 @@ void GemmExImpl(
         ToNativeTransposeMode(transB),
         ToSizeT(m), ToSizeT(n), ToSizeT(k),
         alpha,
-        A, ToSizeT(lda),
-        B, ToSizeT(ldb),
+        reinterpret_cast<CNTP>(A), ToSizeT(lda),
+        reinterpret_cast<CNTP>(B), ToSizeT(ldb),
         beta,
-        C, ToSizeT(ldc));
+        reinterpret_cast<NTP>(C), ToSizeT(ldc));
 }
     
 
