@@ -128,6 +128,51 @@ struct IsSupportedType
 template <typename T, BLAS_Op op>
 struct IsSupportedType<T,op,false> : std::false_type {};
 
+/** @class cuBLASTypeEnum
+ *  @brief Metafunction mapping type names to cuBLAS type enum equivalents
+ * 
+ *  Added for supporting cublasGemmEx fields that require this enum
+ */
+template <typename T> struct cuBLASTypeEnum;
+
+template <> struct cuBLASTypeEnum<__half>
+{
+    static constexpr auto value = CUBLAS_R_16F;
+}
+
+template <> struct cuBLASTypeEnum<float>
+{
+    static constexpr auto value = CUBLAS_R_32F;
+}
+
+template <> struct cuBLASTypeEnum<double>
+{
+    static constexpr auto value = CUBLAS_R_64F;
+}
+
+/** @class IsSupportedGemmExCombo
+ *  @brief Predicate indicating that the given type is compatible with
+ *         a cublasGemmEx call.
+ */
+template <typename ScalarType, typename ABType, typename CType>
+struct IsSupportedGemmExCombo : std::false_type
+{};
+
+#define ADD_OK_GEMMEX_COMBO(SCALAR, AB, C, COMPUTE)                         \
+    template <> IsSupportedGemmExCombo<SCALAR, AB, C> : std::true_type      \
+    {                                                                       \
+        static constexpr auto compute_type = COMPUTE;                       \
+        static constexpr auto ab_type = cuBLASTypeEnum<AB>::value;          \
+        static constexpr auto c_type = cuBLASTypeEnum<C>::value;            \
+        static constexpr auto scale_type = cuBLASTypeEnum<SCALAR>::value;   \
+    }                                                                       \
+
+ADD_OK_GEMMEX_COMBO(__half, __half, __half, CUBLAS_COMPUTE_16F);
+ADD_OK_GEMMEX_COMBO(float, __half, __half, CUBLAS_COMPUTE_32F);
+ADD_OK_GEMMEX_COMBO(float, half, float, CUBLAS_COMPUTE_32F);
+ADD_OK_GEMMEX_COMBO(float, float, float, CUBLAS_COMPUTE_32F_FAST_16F);
+ADD_OK_GEMMEX_COMBO(double, double, double, CUBLAS_COMPUTE_64F);
+
 }// namespace cublas
 }// namespace hydrogen
 #endif // HYDROGEN_DEVICE_GPU_CUDA_CUBLASMETA_HPP_

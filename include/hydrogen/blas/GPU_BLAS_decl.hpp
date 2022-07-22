@@ -580,6 +580,51 @@ void Dgmm(SideMode side,
           T* C, SizeT ldc,
           SyncInfo<Device::GPU> const& syncinfo);
 
+/** @brief Mixed Precision Matrix-matrix product in GPU memory.
+ *
+ *  Perform a scaled matrix-matrix product:
+ *
+ *  @f[ C = \alpha\text{op}(A)\text{op}(B) + \beta C. @f]
+ *
+ *  @tparam ScalarType (Inferred) The type of the Scalars. Should be the
+ *                      type of the anticipated compute precision
+ *  @tparam ABType (Inferred) The type of input matrix A and B.
+ *  @tparam CType (Inferred) The type of output matrix C.
+ *  @tparam SizeT (Inferred) The type used to express size information.
+ *
+ *  @param[in] transpA The operation flag for `A` indicating `NORMAL`,
+ *                     `TRANSPOSE`, or `CONJ_TRANSPOSE`.
+ *  @param[in] transpB The operation flag for `B` indicating `NORMAL`,
+ *                     `TRANSPOSE`, or `CONJ_TRANSPOSE`.
+ *  @param[in] m The number of rows in `op(A)` and C.
+ *  @param[in] n The number of columns in `op(B)` and C.
+ *  @param[in] k The number of columns in `op(A)` and rows in `op(B)`.
+ *  @param[in] alpha The scaling term on the multiplicative term.
+ *  @param[in] A A matrix in column-major format.
+ *  @param[in] lda The leading dimension of A.
+ *  @param[in] B A matrix in column-major format.
+ *  @param[in] ldb The leading dimension of B
+ *  @param[in] beta The scaling applied to the input value of the
+ *                  target matrix.
+ *  @param[in,out] C The target matrix. Inital values are scaled by
+ *                   beta and updated with the result of the product.
+ *  @param[in] ldc The leading dimension of C.
+ *  @param[in] syncinfo The synchronization information for this
+ *                      operation.
+ *
+ *  @ingroup device_blas
+ */
+template <typename ScalarType, typename ABType, typename CType, typename SizeT>
+void GemmEx(
+    TransposeMode transpA, TransposeMode transpB,
+    SizeT m, SizeT n, SizeT k,
+    const void& alpha,
+    const void* A, SizeT lda,
+    const void* B, SizeT ldb,
+    const void& beta,
+    void* C, SizeT ldc,
+    SyncInfo<Device::GPU> const& syncinfo);
+
 ///@}
 
 }// namespace gpu_blas

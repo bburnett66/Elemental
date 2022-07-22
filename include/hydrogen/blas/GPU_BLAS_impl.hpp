@@ -474,6 +474,39 @@ void DgmmImpl(SideMode side,
         reinterpret_cast<NTP>(C), ToSizeT(ldc));
 }
 
+template <typename ScalarType, 
+            typename ABType, 
+            typename CType,
+            EnableWhen<IsSupportedGemmExCombo<ScalarType, ABType, CType>, int> = 0>
+void GemmExImpl(
+    TransposeMode transA, TransposeMode transB,
+    SizeT m, SizeT n, SizeT k,
+    ScalarType const& alpha,
+    ABType const* A, SizeT lda,
+    ABType const* B, SizeT ldb,
+    ScalarType const& beta,
+    CType* C, SizeT ldc,
+    SyncInfo<Device::GPU> const& si)
+{
+    auto constexpr ab_type = IsSupportedGemmExCombo<ScalarType, ABType, CType>::ab_type;
+    auto constexpr ctype = IsSupportedGemmExCombo<ScalarType, ABType, CType>::c_type;
+    auto constexpr scalar_type = IsSupportedGemmExCombo<ScalarType, ABType, CType>::scalar_type;
+    auto constexpr compute_type = IsSupportedGemmExCombo<ScalarType, ABType, CType>::compute_type;
+
+    SyncManager mgr(GetLibraryHandle(), si);
+    gpu_blas_impl::GemmEx(
+        GetLibraryHandle(),
+        ToNativeTransposeMode(transA),
+        ToNativeTransposeMode(transB),
+        ToSizeT(m), ToSizeT(n), ToSizeT(k),
+        alpha,
+        A, ToSizeT(lda),
+        B, ToSizeT(ldb),
+        beta,
+        C, ToSizeT(ldc));
+}
+    
+
 //
 // Custom kernel declarations (impls can't be here because this is a
 // C++ header, but dispatch needs to work right)
@@ -1009,6 +1042,23 @@ void Trsm(
         return;
     details::TrsmImpl(side, uplo, trans, diag, m, n,
                       alpha, A, lda, B, ldb, syncinfo);
+}
+
+template <typename ABType, typename CType, typename ScalarType, typename SizeT>
+void Gemm(
+    TransposeMode transA, TransposeMode transB,
+    SizeT m, SizeT n, SizeT k,
+    ScalarType const& alpha,
+    ABType const* A, SizeT lda,
+    ABType const* B, SizeT ldb,
+    ScalarType const& beta,
+    CType* C, SizeT ldc,
+    SyncInfo<Device::GPU> const& si)
+{
+    details::GemmExImpl(transA, transB,
+                      m, n, k,
+                      alpha, A, lda, B, ldb,
+                      beta, C, ldc, si);
 }
 
 template <typename T, typename SizeT>

@@ -367,6 +367,33 @@ using RealType = typename RealTypeT<T>::type;
                 side, m, n, A, lda, X, incx, C, ldc));  \
     }
 
+//NOTE: Scalar type is inferred from the compute type
+#define ADD_GEMMEX_IMPL(ABType, CType, ComputeType, AlgoType)   \
+    void GemmEx(                                                \
+        cublasHandle_t,                                         \
+        cublasOperation_t transpA,                              \
+        cublasOperation_t transpB,                              \
+        int m, int n, int k,                                    \
+        const void& alpha,                                      \
+        const void* A, int lda,                                 \
+        const void* B, int ldb,                                 \
+        const void& beta,                                       \
+        void* C, int ldc)                                       \
+    {                                                           \
+        H_CHECK_CUBLAS(                                         \
+            cublasGemmEx(                                       \
+                    handle,                                     \
+                    transpA, transpB,                           \
+                    m, n, k,                                    \
+                    &alpha,                                     \
+                    A, ABType, lda,                             \
+                    B, ABType, ldb,                             \
+                    &beta,                                      \
+                    C, CType, ldc,                              \
+                    ComputeType, AlgoType                       \
+                ));                                             \
+    }                                                           \
+
 // BLAS 1
 ADD_AXPY_IMPL(float, S)
 ADD_AXPY_IMPL(double, D)
@@ -438,6 +465,12 @@ ADD_DGMM_IMPL(double, D)
 ADD_DGMM_IMPL(cuComplex, C)
 ADD_DGMM_IMPL(cuDoubleComplex, Z)
 
+ADD_GEMMEX_IMPL(CUBLAS_R_16F, CUBLAS_R_16F, CUBLAS_COMPUTE_16F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
+ADD_GEMMEX_IMPL(CUBLAS_R_16F, CUBLAS_R_16F, CUBLAS_COMPUTE_32F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
+ADD_GEMMEX_IMPL(CUBLAS_R_16F, CUBLAS_R_32F, CUBLAS_COMPUTE_32F, CUBLAS_GEMM_DEFUALT_TENSOR_OP);
+ADD_GEMMEX_IMPL(CUBLAS_R_32F, CUBLAS_R_32F, CUBLAS_COMPUTE_32F_FAST_16F, CUBLAS_GEMM_DEFAULT_TENSOR_OP);
+ADD_GEMMEX_IMPL(CUBLAS_R_64F, CUBLAS_R_64F, CUBLAS_COMPUTE_64F, CUBLAS_GEMM_DEFAULT);
+
 //
 // "STATIC" UNIT TEST
 //
@@ -447,6 +480,12 @@ ADD_DGMM_IMPL(cuDoubleComplex, Z)
 
 #define ASSERT_NO_SUPPORT(type, op)                             \
     static_assert(!IsSupportedType<type, op>::value, "")
+
+#define ASSERT_SUPPORT_GEMMEX(ScalarType, ABType, CType)            \
+    static_assert(IsSupportedGemmExCombo<ScalarType, ABType, CType>::value, "")
+
+#define ASSERT_NO_SUPPORT_GEMMEX(ScalarType, ABType, CType)            \
+    static_assert(!IsSupportedGemmExCombo<ScalarType, ABType, CType>::value, "")
 
 ASSERT_SUPPORT(float, BLAS_Op::AXPY);
 ASSERT_SUPPORT(float, BLAS_Op::COPY);
@@ -503,6 +542,32 @@ ASSERT_NO_SUPPORT(__half, BLAS_Op::COPY);
 ASSERT_NO_SUPPORT(__half, BLAS_Op::DGMM);
 ASSERT_NO_SUPPORT(__half, BLAS_Op::GEAM);
 ASSERT_NO_SUPPORT(__half, BLAS_Op::GEMV);
+
+//GemmEX
+ASSERT_SUPPORT_GEMMEX(__half, __half, __half);
+ASSERT_SUPPORT_GEMMEX(float, __half, __half);
+ASSERT_SUPPORT_GEMMEX(float, __half, float);
+ASSERT_SUPPORT_GEMMEX(float, float, float);
+ASSERT_SUPPORT_GEMMEX(double, double, double);
+ASSERT_NO_SUPPORT_GEMMEX(__half, __half, float);
+ASSERT_NO_SUPPORT_GEMMEX(__half, float, float);
+ASSERT_NO_SUPPORT_GEMMEX(__half, __half, double);
+ASSERT_NO_SUPPORT_GEMMEX(__half, double, double);
+ASSERT_NO_SUPPORT_GEMMEX(float, double, double);
+ASSERT_NO_SUPPORT_GEMMEX(float, float, double);
+ASSERT_NO_SUPPORT_GEMMEX(float, double, float);
+ASSERT_NO_SUPPORT_GEMMEX(double, double __half);
+ASSERT_NO_SUPPORT_GEMMEX(double, __half, __half);
+ASSERT_NO_SUPPORT_GEMMEX(double, __half, double);
+ASSERT_NO_SUPPORT_GEMMEX(double, double, float);
+ASSERT_NO_SUPPORT_GEMMEX(double, float, float);
+ASSERT_NO_SUPPORT_GEMMEX(double, float, double);
+ASSERT_NO_SUPPORT_GEMMEX(__half, float, double);
+ASSERT_NO_SUPPORT_GEMMEX(__half, double, float);
+ASSERT_NO_SUPPORT_GEMMEX(float, __half, double);
+ASSERT_NO_SUPPORT_GEMMEX(float, double, half);
+ASSERT_NO_SUPPORT_GEMMEX(double __half, float);
+ASSERT_NO_SUPPORT_GEMMEX(double, float, __half);
 
 #ifdef HYDROGEN_HAVE_HALF
 ASSERT_SUPPORT(cpu_half_type, BLAS_Op::AXPY);
