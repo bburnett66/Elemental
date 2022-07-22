@@ -618,10 +618,10 @@ template <typename ScalarType, typename ABType, typename CType, typename SizeT>
 void GemmEx(
     TransposeMode transpA, TransposeMode transpB,
     SizeT m, SizeT n, SizeT k,
-    const void& alpha,
+    const void alpha,
     const void* A, SizeT lda,
     const void* B, SizeT ldb,
-    const void& beta,
+    const void beta,
     void* C, SizeT ldc,
     SyncInfo<Device::GPU> const& syncinfo);
 

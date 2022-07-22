@@ -8,6 +8,7 @@
 #include <hydrogen/utils/HalfPrecision.hpp>
 
 #include <cublas_v2.h>
+#include <library_types.h> //cuda library types
 
 namespace hydrogen
 {
@@ -138,17 +139,17 @@ template <typename T> struct cuBLASTypeEnum;
 template <> struct cuBLASTypeEnum<__half>
 {
     static constexpr auto value = CUBLAS_R_16F;
-}
+};
 
 template <> struct cuBLASTypeEnum<float>
 {
     static constexpr auto value = CUBLAS_R_32F;
-}
+};
 
 template <> struct cuBLASTypeEnum<double>
 {
     static constexpr auto value = CUBLAS_R_64F;
-}
+};
 
 /** @class IsSupportedGemmExCombo
  *  @brief Predicate indicating that the given type is compatible with
@@ -159,7 +160,7 @@ struct IsSupportedGemmExCombo : std::false_type
 {};
 
 #define ADD_OK_GEMMEX_COMBO(SCALAR, AB, C, COMPUTE)                         \
-    template <> IsSupportedGemmExCombo<SCALAR, AB, C> : std::true_type      \
+    template <> struct IsSupportedGemmExCombo<SCALAR, AB, C> : std::true_type      \
     {                                                                       \
         static constexpr auto compute_type = COMPUTE;                       \
         static constexpr auto ab_type = cuBLASTypeEnum<AB>::value;          \
