@@ -12,7 +12,7 @@
 
 using namespace El;
 
-template<typename ABType, CType, ScalarType, Device D>
+template<typename ABType, typename CType, typename ScalarType, Device D>
 void TestGemm
 (Orientation orientA,
  Orientation orientB,
