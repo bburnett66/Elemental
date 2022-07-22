@@ -225,7 +225,7 @@ ADD_DGMM_DECL(double);
 ADD_DGMM_DECL(cuComplex);
 ADD_DGMM_DECL(cuDoubleComplex);
 
-#define ADD_GEMMEX_DECL(ABType, CType, ScalarType,)     \
+#define ADD_GEMMEX_DECL(ABType, CType, ScalarType)      \
     void GemmEx(                                        \
         cublasHandle_t,                                 \
         cublasOperation_t transpA,                      \
