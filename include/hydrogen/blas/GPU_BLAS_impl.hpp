@@ -62,6 +62,7 @@ namespace details
 using gpu_blas_impl::ToSizeT;
 using gpu_blas_impl::GetLibraryHandle;
 using gpu_blas_impl::IsSupportedType;
+using gpu_blas_impl::IsSupportedGemmExCombo;
 using gpu_blas_impl::NativeType;
 using gpu_blas_impl::SyncManager;
 using gpu_blas_impl::ToNativeDiagType;

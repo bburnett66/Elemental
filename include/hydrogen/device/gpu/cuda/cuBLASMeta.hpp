@@ -138,17 +138,17 @@ template <typename T> struct cuBLASTypeEnum;
 
 template <> struct cuBLASTypeEnum<__half>
 {
-    static constexpr auto value = CUBLAS_R_16F;
+    static constexpr auto value = CUDA_R_16F;
 };
 
 template <> struct cuBLASTypeEnum<float>
 {
-    static constexpr auto value = CUBLAS_R_32F;
+    static constexpr auto value = CUDA_R_32F;
 };
 
 template <> struct cuBLASTypeEnum<double>
 {
-    static constexpr auto value = CUBLAS_R_64F;
+    static constexpr auto value = CUDA_R_64F;
 };
 
 /** @class IsSupportedGemmExCombo
