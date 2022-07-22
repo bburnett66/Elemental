@@ -12,42 +12,6 @@
 
 using namespace El;
 
-template<typename T, Device D>
-void TestAssociativity
-(Orientation orientA, Orientation orientB,
- T alpha,
- DistMatrix<T,MC,MR,ELEMENT,D> const& A,
- DistMatrix<T,MC,MR,ELEMENT,D> const & B,
- T beta,
- DistMatrix<T,MC,MR,ELEMENT,D> const& COrig,
- DistMatrix<T,MC,MR,ELEMENT,D> const& CFinal,
- bool print)
-{
-    EL_DEBUG_ONLY(CallStackEntry cse("TestAssociativity"));
-    InitializeRandom();
-    // Test (alpha op(A) op(B) + beta C) X = alpha op(A) (op(B) X) + beta C X
-    const Int numRHS = 100;
-    const Int n = COrig.Width();
-    const Grid& g = A.Grid();
-    DistMatrix<T,MC,MR,ELEMENT,D> X(g), Y(g), Z(g);
-    Uniform(X, n, numRHS, TypeTraits<T>::Zero(), TypeTraits<Base<T>>::One());
-    Gemm(orientB, NORMAL, TypeTraits<T>::One(), B, X, Z);
-    Gemm(orientA, NORMAL, alpha, A, Z, Y);
-    Gemm(NORMAL, NORMAL, beta, COrig, X, TypeTraits<T>::One(), Y);
-    const Base<T> YFrobNorm = FrobeniusNorm(Y);
-    if (print)
-        Print(Y, "Y := alpha op(A) op(B) + beta C");
-    T one = TypeTraits<T>::One();
-    T neg_one = -one;
-    Gemm(NORMAL, NORMAL, neg_one, CFinal, X, one, Y);
-    const Base<T> EFrobNorm = FrobeniusNorm(Y);
-    if (print)
-        Print(Y, "E");
-    OutputFromRoot
-        (g.Comm(), "|| E ||_F / || Y ||_F = ",
-         EFrobNorm, "/", YFrobNorm, "=", EFrobNorm/YFrobNorm);
-}
-
 template<typename ABType, CType, ScalarType, Device D>
 void TestGemm
 (Orientation orientA,
@@ -85,13 +49,6 @@ void TestGemm
     El::gpu::SynchronizeDevice();
 #endif // HYDROGEN_HAVE_GPU
 
-    if (print)
-    {
-        Print(A, "A");
-        Print(B, "B");
-        Print(COrig, "COrig");
-    }
-
     helpers::SyncTimer<D> timer(SyncInfoFromMatrix(C.LockedMatrix()));
     float cudaTime;
 
@@ -119,18 +76,12 @@ void TestGemm
         timer.Stop();
         runTime = timer.GetTime();
         realGFlops = 2.*double(m)*double(n)*double(k)/(1.e9*runTime);
-        gFlops = (IsComplex<T>::value ? 4*realGFlops : realGFlops);
+        gFlops = realGFlops;
         OutputFromRoot(
             g.Comm(),"Finished in ",runTime," seconds (",gFlops," GFlop/s)");
 
         flush(std::cout);
 
-        if (print)
-            Print(C, BuildString("C := ",alpha," A B + ",beta," C"));
-        if (correctness)
-            TestAssociativity(orientA, orientB,
-                              alpha, A, B, beta, COrig, C,
-                              print);
         PopIndent();
 
         flush(std::cout);
@@ -150,17 +101,11 @@ void TestGemm
         timer.Stop();
         runTime = timer.GetTime();
         realGFlops = 2.*double(m)*double(n)*double(k)/(1.e9*runTime);
-        gFlops = (IsComplex<T>::value ? 4*realGFlops : realGFlops);
+        gFlops = realGFlops;
 
         OutputFromRoot(
             g.Comm(),"Finished in ",runTime, " seconds (",gFlops," GFlop/s)");
 
-        if (print)
-            Print(C, BuildString("C := ",alpha," A B + ",beta," C"));
-        if (correctness)
-            TestAssociativity(orientA, orientB,
-                              alpha, A, B, beta, COrig, C,
-                              print);
         PopIndent();
 
         flush(std::cout);
@@ -180,16 +125,11 @@ void TestGemm
         timer.Stop();
         runTime = timer.GetTime();
         realGFlops = 2.*double(m)*double(n)*double(k)/(1.e9*runTime);
-        gFlops = (IsComplex<T>::value ? 4*realGFlops : realGFlops);
+        gFlops = realGFlops;
 
         OutputFromRoot(
             g.Comm(),"Finished in ",runTime," seconds (",gFlops," GFlop/s)");
 
-        if (print)
-            Print(C, BuildString("C := ",alpha," A B + ",beta," C"));
-        if (correctness)
-            TestAssociativity
-                (orientA, orientB, alpha, A, B, beta, COrig, C, print);
         PopIndent();
 
         flush(std::cout);
@@ -211,16 +151,10 @@ void TestGemm
             timer.Stop();
             runTime = timer.GetTime();
             realGFlops = 2.*double(m)*double(n)*double(k)/(1.e9*runTime);
-            gFlops = (IsComplex<T>::value ? 4*realGFlops : realGFlops);
+            gFlops = realGFlops;
             OutputFromRoot(
                 g.Comm(),"Finished in ",runTime," seconds (",gFlops,
                 " GFlop/s)");
-
-            if (print)
-                Print(C, BuildString("C := ",alpha," A B + ",beta," C"));
-            if (correctness)
-                TestAssociativity
-                    (orientA, orientB, alpha, A, B, beta, COrig, C, print);
 
             PopIndent();
             flush(std::cout);
